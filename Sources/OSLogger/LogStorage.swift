@@ -11,9 +11,11 @@ class LogStorage {
     internal let workQueue = DispatchQueue(label: LogStorage.bundleId + ".LogStorage.BackgroundQueue", qos: .utility)
     internal let ioQueue = DispatchQueue(label: LogStorage.bundleId + ".LogStorage.IOQueue", qos: .utility)
     
-    internal let currentLogName = "\(Date().timeIntervalSince1970).log"
-    
-    internal let dateFormatter = ISO8601DateFormatter()
+    internal let dateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate, .withFullTime, .withFractionalSeconds, .withTimeZone]
+        return formatter
+    }()
     
     internal var flushTimer: Timer?
     
@@ -54,6 +56,15 @@ class LogStorage {
             }
         }
         return currentLog
+    }
+    
+    func currentLogFile() -> URL? {
+        var currentLogFile: URL? = nil
+        workQueue.sync {
+            self.flushLog()
+            currentLogFile = _currentLogURL
+        }
+        return currentLogFile
     }
     
     func directoryWithLogs() -> URL? {
@@ -125,8 +136,25 @@ class LogStorage {
         }
     }
     
+    private var _currentLogURL: URL?
     internal func currentLogURL() throws -> URL {
-        return try logStorageDirURL().appendingPathComponent(currentLogName, isDirectory: false)
+        if let currentLogURL = _currentLogURL {
+            return currentLogURL
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMddHHmmss"
+        let name = formatter.string(from: Date())
+        
+        let storageDirURL = try logStorageDirURL()
+        var fileURL = storageDirURL.appendingPathComponent(name+".log", isDirectory: false)
+        var index = 2
+        while FileManager.default.fileExists(atPath: fileURL.path) {
+            var fileURL = storageDirURL.appendingPathComponent(name+"-\(index).log", isDirectory: false)
+            index=index+1
+        }
+        _currentLogURL = fileURL
+        return fileURL
     }
     
     internal func logStorageDirURL() throws -> URL {
@@ -155,8 +183,8 @@ class LogStorage {
                 Double(rh.deletingPathExtension().lastPathComponent) ?? 0.0
             }
             
-            if sorted.count > 20 {
-                let markedForDeletion = sorted.suffix(from: 20)
+            if sorted.count > 15 {
+                let markedForDeletion = sorted.suffix(from: 15)
                 for url in markedForDeletion {
                     try FileManager.default.removeItem(at: url)
                 }
