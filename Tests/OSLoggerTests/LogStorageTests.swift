@@ -87,6 +87,24 @@ final class LogStorageTests: XCTestCase {
         }
     }
     
+    func testWriteNewLines() {
+        logStorage.log(message: "first", timestamp: Date())
+        logStorage.forceFlushLog()
+        
+        sleep(1) /// Sleeping, because write is async.
+        logStorage.log(message: "second", timestamp: Date())
+        logStorage.forceFlushLog()
+        
+        sleep(1) /// Sleeping, because write is async.
+        
+        let log = logStorage.currentLog()
+        XCTAssertNotNil(log)
+        let logLines = log?.components(separatedBy: .newlines)
+        XCTAssertNotNil(logLines)
+        XCTAssertEqual(logLines?.count, 3)
+        XCTAssertTrue(logLines?.last?.isEmpty ?? false)
+    }
+    
     static var allTests = [
         ("testWrite", testWrite),
     ]

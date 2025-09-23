@@ -124,7 +124,7 @@ class LogStorage {
     }
     
     internal func writeLog(_ log: [String], into fileURL: URL) throws {
-        guard let data = log.joined(separator: "\n").data(using: String.Encoding.utf8) else {
+        guard let data = log.joined(separator: "\n").appending("\n").data(using: String.Encoding.utf8) else {
             throw Error.writeError(reason: "Failed to create data out of log.")
         }
         
