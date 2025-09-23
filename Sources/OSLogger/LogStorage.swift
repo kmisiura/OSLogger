@@ -12,9 +12,10 @@ class LogStorage {
     internal let ioQueue = DispatchQueue(label: LogStorage.bundleId + ".LogStorage.IOQueue", qos: .utility)
     
     internal let dateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate, .withFullTime, .withFractionalSeconds, .withTimeZone]
-        return formatter
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.timeZone = .current
+        dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds, .withTimeZone]
+        return dateFormatter
     }()
     
     internal var flushTimer: Timer?
@@ -150,7 +151,7 @@ class LogStorage {
         var fileURL = storageDirURL.appendingPathComponent(name+".log", isDirectory: false)
         var index = 2
         while FileManager.default.fileExists(atPath: fileURL.path) {
-            var fileURL = storageDirURL.appendingPathComponent(name+"-\(index).log", isDirectory: false)
+            fileURL = storageDirURL.appendingPathComponent(name+"-\(index).log", isDirectory: false)
             index=index+1
         }
         _currentLogURL = fileURL

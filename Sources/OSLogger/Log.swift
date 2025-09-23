@@ -2,7 +2,12 @@ import Foundation
 import os.log
 
 public class Log {
-    static var dateFormatter = ISO8601DateFormatter()
+    static var dateFormatter: ISO8601DateFormatter = {
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.timeZone = .current
+        dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds, .withTimeZone]
+        return dateFormatter
+    }()
     
     public enum Level: Int, RawRepresentable, CaseIterable {
         case debug = 6

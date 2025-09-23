@@ -29,6 +29,7 @@ final class LogStorageTests: XCTestCase {
         XCTAssertNoThrow(savedFile = try String(contentsOf: url!, encoding: .utf8))
         XCTAssertNotNil(savedFile)
         XCTAssertEqual(savedFile?.isEmpty ?? true, false)
+        print("Saved file: \(savedFile ?? "")")
     }
     
     func testAutoFlush() {
