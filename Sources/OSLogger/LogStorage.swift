@@ -144,6 +144,7 @@ class LogStorage {
         }
         
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMddHHmmss"
         let name = formatter.string(from: Date())
         
