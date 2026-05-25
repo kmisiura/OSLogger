@@ -131,7 +131,11 @@ class LogStorage {
         if let fileHandle = FileHandle(forWritingAtPath: fileURL.path) {
             defer { fileHandle.closeFile() }
             fileHandle.seekToEndOfFile()
-            fileHandle.write(data)
+            if #available(iOS 13.4, *) {
+                try fileHandle.write(contentsOf: data)
+            } else {
+                fileHandle.write(data)
+            }
         } else {
             try data.write(to: fileURL, options: .atomic)
         }
